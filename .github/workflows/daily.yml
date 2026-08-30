@@ -1,0 +1,43 @@
+name: AI HOT 每日晨报
+
+# 北京时间 09:00 自动跑（GitHub Actions 用 UTC，09:00 北京 = 01:00 UTC）。
+# workflow_dispatch 允许在 GitHub 网页上手动点一下立即触发（用于验证/补跑）。
+on:
+  schedule:
+    - cron: '0 1 * * *'
+  workflow_dispatch:
+
+# 允许工作流把生成的 index.html 提交回仓库（Pages 从 main 分支根目录部署）
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 检出仓库
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 配置 Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: 拉取 aihot 并生成 HTML
+        env:
+          TZ: Asia/Shanghai
+        run: python gen.py
+
+      - name: 提交并推送
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add index.html aihot_daily.json
+          if git diff --cached --quiet; then
+            echo "无变化，跳过提交"
+          else
+            git commit -m "daily update $(date +%F)"
+            git push
+          fi
