@@ -61,69 +61,6 @@ def build_overview(sections_out, date_label):
     takeaway = f"今日 AI 动态以「{dom['theme']}」为主线，最受关注的是：{top}。"
     return {"takeaway": takeaway, "blocks": blocks}
 
-def build_cs_insight(model_items, product_items, industry_items):
-    """结合当日的『模型动态 + 产品动态』（辅以行业动态），合成『AI智能客服的新机会』。
-    数据驱动：用关键词把真实新闻条目映射到具体客服落地场景；每条给出『是否可落地(可行性分级)
-    + 如何应用(说明)』，并按可行性排序，方便快速识别优先验证项。同一新闻只引用一次。"""
-    # (应用方向, 具体说明, 可行性分级, 关键词, 业务优先级)
-    # 业务优先级高(数字大)的规则先挑条目，确保强相关方向优先占用最匹配的新闻，避免错配
-    rules = [
-        ("自主任务执行",
-         "模型对智能体与自动化的优化，使客服从『问答』走向『代办』，可自主操作软件、查询订单、发起退款、更新工单并回执进展。",
-         "可落地", "Agent|智能体|自动化|工作流|代办|操作软件|操作电脑|浏览器操作|Computer Use|执行任务", 5),
-        ("全渠道与多终端覆盖",
-         "借助对移动端、电脑端、网页端等多终端的覆盖能力，客服可延伸到用户所在的任意设备与场景，实现随身式服务。",
-         "可试点", "终端|多端|跨端|移动端|电脑端|网页端|眼镜|手机|开放平台|跨平台|全渠道", 4),
-        ("私有化与数据合规",
-         "端侧/开放权重的模型可在企业内网或私有环境部署，客户对话与工单数据不出域，满足金融、政务等强合规场景要求。",
-         "可试点", "本地|私有化|私有|常驻|开放权重|开源|端侧|本地部署|内网", 3),
-        ("多模态客服",
-         "用户直接发送产品截图、故障照片或聊天记录，模型图文混合理解意图，自动定位问题并给处理建议，减少多轮来回确认。",
-         "可落地", "多模态|multimodal|图像|视觉|截图|图片|图文", 2),
-        ("智能会话路由",
-         "把动态路由用于客服，按问题复杂度与用户价值自动分流到机器人或对应坐席，提升首次解决率(FCR)。",
-         "可落地", "路由|router|调度|分配|分流", 1),
-        ("规模化降本",
-         "底层推理与算力基础设施的持续投入拉低单位调用成本，让 7x24 全量智能客服在大规模用户下仍具经济性。",
-         "趋势", "成本|降本|算力|芯片|数据中心|推理基础设施|单位调用", 0),
-    ]
-    pools = [("模型", model_items), ("产品", product_items), ("行业", industry_items)]
-    flat = [{"src": src, "title": it.get("title", ""), "summary": it.get("summary", ""),
-             "url": it.get("url", ""), "blob": it.get("title", "") + " " + it.get("summary", "")}
-            for src, items in pools for it in items]
-
-    used = set()      # 已占用的新闻标题（同一新闻只引用一次）
-    points = []
-    for title, desc, level, kw, _pri in sorted(rules, key=lambda r: -r[4]):
-        best = None; best_score = 0
-        for it in flat:
-            if it["title"] in used:
-                continue
-            score = len(re.findall(kw, it["blob"]))
-            if score > best_score:
-                best_score = score; best = it
-        if best:
-            used.add(best["title"])
-            points.append({"title": title, "sourceLabel": best["src"],
-                           "sourceTitle": best["title"], "sourceUrl": best["url"],
-                           "desc": desc, "level": level})
-
-    n_m, n_p = len(model_items), len(product_items)
-    k = len(points)
-    if not points:
-        names = [it["title"] for it in (model_items + product_items)][:3]
-        verdict = (f"结合今日 {n_m} 条模型动态与 {n_p} 条产品动态"
-                   f"（{('、'.join(names)) or '暂无'}），暂未匹配到明确的智能客服落点，建议持续跟踪。")
-        return {"verdict": verdict, "points": []}
-
-    rank = {"可落地": 0, "可试点": 1, "需评估": 2, "趋势": 3}
-    pts_sorted = sorted(points, key=lambda p: rank.get(p["level"], 9))
-    top2 = "、".join("「" + p["title"] + "」" for p in pts_sorted[:2])
-    verdict = (f"结合今日 {n_m} 条模型动态与 {n_p} 条产品动态，其中 {k} 个方向与 AI 智能客服强相关。"
-               f"建议优先从 {top2} 切入验证。")
-    # 展示按可行性排序（可落地优先），便于快速识别优先级
-    return {"verdict": verdict, "points": pts_sorted}
-
 d = json.load(open(SRC))
 sec_map = {s["label"]: s["items"] for s in d.get("sections", [])}
 
@@ -166,21 +103,12 @@ source_name = src.get("source", "AIHOT")
 
 overview = build_overview(sections_out, date_label)
 
-def _items_of(label):
-    return next(s["items"] for s in sections_out if s["label"] == label)
-cs_insight = build_cs_insight(
-    _items_of("模型发布/更新"),
-    _items_of("产品发布/更新"),
-    _items_of("行业动态"),
-)
-
 DATA = {
     "dateLabel": date_label,
     "genLabel": gen_label,
     "windowLabel": window_label,
     "total": total,
     "overviewObj": overview,
-    "csObj": cs_insight,
     "sourceName": source_name,
     "canonical": canonical,
     "sections": sections_out,
@@ -248,7 +176,6 @@ HTML = """<!DOCTYPE html>
     margin:2px 0 14px;padding:11px 14px;background:#f5f3ff;
     border-radius:10px;border-left:3px solid #7c3aed;
   }
-  .overview .box.cs .takeaway{background:#eafaf8;border-left-color:#0d948b;color:#0f3b37}
   /* 今日要点：分块 + 加粗标题，便于扫读 */
   .ov-block{display:flex;gap:12px;padding:12px 0;border-top:1px solid var(--line)}
   .ov-block:first-of-type{border-top:none}
@@ -270,24 +197,6 @@ HTML = """<!DOCTYPE html>
     .ov-block{flex-direction:column;gap:3px}
     .ov-block-label{flex:none}
   }
-  /* 第二个块：AI 智能客服的新机会（不同强调色） */
-  .overview .box.cs{border-left-color:#0d948b}
-  .overview .o-head .tag.cs{color:#0d948b;background:#e6f7f4}
-  /* 客服机会：按可行性分级的卡片网格 */
-  .cs-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(278px,1fr));gap:12px;margin-top:4px}
-  .cs-card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px 15px;box-shadow:var(--shadow)}
-  .cs-card-top{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:7px}
-  .cs-title{font-size:14.5px;font-weight:800;color:#0f3b37}
-  .cs-level{font-size:11px;font-weight:700;border-radius:999px;padding:2px 9px;white-space:nowrap}
-  .lv-high{color:#047857;background:#d1fae5}
-  .lv-mid{color:#0369a1;background:#e0f2fe}
-  .lv-low{color:#b45309;background:#fef3c7}
-  .lv-trend{color:#6b7280;background:#f3f4f6}
-  .cs-src{font-size:12px;color:var(--muted);margin-bottom:7px}
-  .cs-src a{color:#0d948b;font-weight:600;text-decoration:none}
-  .cs-src a:hover{text-decoration:underline}
-  .cs-desc{font-size:13.5px;color:#374151;line-height:1.66}
-  @media (max-width:520px){ .cs-grid{grid-template-columns:1fr} }
 
   /* NAV */
   .nav{
@@ -376,14 +285,6 @@ HTML = """<!DOCTYPE html>
       <p class="takeaway" id="ovTakeaway"></p>
       <div class="ov-blocks" id="ovBlocks"></div>
     </div>
-    <div class="box cs" style="margin-top:14px">
-      <div class="o-head">
-        <span class="tag cs">AI 智能客服 · 新机会</span>
-        <h2>AI智能客服的新机会</h2>
-      </div>
-      <p class="takeaway cs-take" id="csVerdict"></p>
-      <div class="cs-grid" id="csGrid"></div>
-    </div>
   </section>
 
   <nav class="nav" id="nav"></nav>
@@ -440,39 +341,6 @@ const ovBlocks = document.getElementById("ovBlocks");
   block.appendChild(lab);
   block.appendChild(ul);
   ovBlocks.appendChild(block);
-});
-
-// ---- AI智能客服的新机会：结论 + 按可行性分级的卡片 ----
-const cs = DATA.csObj || {verdict:"", points:[]};
-document.getElementById("csVerdict").textContent = cs.verdict;
-const csGrid = document.getElementById("csGrid");
-const lvClass = {"可落地":"lv-high","可试点":"lv-mid","需评估":"lv-low","趋势":"lv-trend"};
-(cs.points || []).forEach(p=>{
-  const card = document.createElement("div");
-  card.className = "cs-card";
-  const top = document.createElement("div");
-  top.className = "cs-card-top";
-  const title = document.createElement("span");
-  title.className = "cs-title"; title.textContent = p.title;
-  const lv = document.createElement("span");
-  lv.className = "cs-level " + (lvClass[p.level] || "lv-mid");
-  lv.textContent = p.level;
-  top.appendChild(title); top.appendChild(lv);
-  const src = document.createElement("div");
-  src.className = "cs-src";
-  src.appendChild(document.createTextNode("源自 " + p.sourceLabel + "动态 · "));
-  if(p.sourceUrl){
-    const a = document.createElement("a");
-    a.href = p.sourceUrl; a.target = "_blank"; a.rel = "noopener noreferrer";
-    a.textContent = p.sourceTitle;
-    src.appendChild(a);
-  } else {
-    src.appendChild(document.createTextNode(p.sourceTitle));
-  }
-  const desc = document.createElement("p");
-  desc.className = "cs-desc"; desc.textContent = p.desc;
-  card.appendChild(top); card.appendChild(src); card.appendChild(desc);
-  csGrid.appendChild(card);
 });
 
 // stats chips
