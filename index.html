@@ -81,33 +81,6 @@
     .ov-block-label{flex:none}
   }
 
-  /* CSWATCH (做AI智能客服该关注什么) */
-  .cswatch{max-width:1080px;margin:14px auto 0;padding:0 18px}
-  .cswatch .box{border-left-color:#0d948b}
-  .cswatch .o-head .tag.cs{color:#0d948b;background:#e6f7f4}
-  .cswatch .takeaway.cs-lead{
-    font-size:14px;font-weight:600;color:#134e4a;line-height:1.6;
-    margin:2px 0 14px;padding:10px 14px;background:#e9f7f5;
-    border-radius:10px;border-left:3px solid #0d948b;
-  }
-  .cs-groups{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-  .cs-group{background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px 16px}
-  .cs-group-head{display:flex;align-items:center;gap:7px;font-size:14.5px;font-weight:800;margin-bottom:10px}
-  .cs-ic{width:9px;height:9px;border-radius:50%;display:inline-block}
-  .cs-group-head.land .cs-ic{background:#059669;box-shadow:0 0 0 4px #d1fae5}
-  .cs-group-head.trend .cs-ic{background:#0284c7;box-shadow:0 0 0 4px #e0f2fe}
-  .cs-list{list-style:none}
-  .cs-list li{padding:9px 0;border-top:1px dashed var(--line);line-height:1.55}
-  .cs-list li:first-child{border-top:none;padding-top:0}
-  .cs-list .cs-lbl{font-size:11px;font-weight:700;color:#0d948b;background:#e6f7f4;border-radius:6px;padding:1px 7px;margin-right:6px}
-  .cs-list .cs-t{font-size:13.5px;font-weight:700;color:#1f2533}
-  .cs-list .cs-s{display:block;font-size:12.5px;color:#4b5563;margin-top:3px}
-  .cs-empty{font-size:13px;color:var(--muted);padding:4px 0}
-  @media (max-width:640px){
-    .cswatch{padding:0 12px}
-    .cs-groups{grid-template-columns:1fr}
-  }
-
   /* NAV */
   .nav{
     position:sticky;top:0;z-index:20;background:rgba(255,255,255,.92);
@@ -197,26 +170,6 @@
     </div>
   </section>
 
-  <section class="cswatch" id="cswatch">
-    <div class="box">
-      <div class="o-head">
-        <span class="tag cs">做 AI 智能客服 · 该关注什么</span>
-        <h2>做AI智能客服该关注什么</h2>
-      </div>
-      <p class="takeaway cs-lead" id="csLead"></p>
-      <div class="cs-groups">
-        <div class="cs-group">
-          <div class="cs-group-head land"><span class="cs-ic"></span>可落地</div>
-          <ul class="cs-list" id="csLand"></ul>
-        </div>
-        <div class="cs-group">
-          <div class="cs-group-head trend"><span class="cs-ic"></span>是趋势</div>
-          <ul class="cs-list" id="csTrend"></ul>
-        </div>
-      </div>
-    </div>
-  </section>
-
   <nav class="nav" id="nav"></nav>
 
   <main class="wrap" id="content"></main>
@@ -227,7 +180,7 @@
   </footer>
 
 <script>
-const DATA = {"dateLabel": "2026年8月30日 星期日", "genLabel": "2026年8月30日 08:01（北京时间）", "windowLabel": "8月29日 08:00 – 8月30日 08:00（北京时间）", "total": 6, "overviewObj": {"takeaway": "今日 AI 动态以「模型层面」为主线，最受关注的是：智谱开源 GLM-5.3 模型权重，主打智能体编程与网络防御。", "blocks": [{"label": "模型发布/更新", "theme": "模型层面", "color": "#2563eb", "items": [{"title": "智谱开源 GLM-5.3 模型权重，主打智能体编程与网络防御", "summary": "智谱宣布开源 GLM-5.3 模型权重，支持本地运行与个性化定制，擅长复杂编码、防御性网络安全及长程任务。该模型在 AA 综合智能指数中取得 60 分，与 Claude Fable 5、GPT-5.6 Sol 等闭源旗舰同级，并与 Kimi K3 并列开源模型第一。仅年营业额超 100 亿美元的机构将其作为外部模型服务提供时才需安全审查"}]}, {"label": "行业动态", "theme": "行业方面", "color": "#f59e0b", "items": [{"title": "Cursor回应OpenAI将封禁其模型访问", "summary": "我们很遗憾地看到，OpenAI 发布声明称计划在三个月内阻止 Cursor 用户访问 OpenAI 模型。 OpenAI 模型承载了 Cursor 约 5% 的用户流量，我们正在与 OpenAI 团队沟通以解决此事。 Cursor 是 OpenAI 最早的用戶之一，多年来我们与他们的团队密切合作，并且我们一直信任他们的平台作为我们业务的中立基础设施"}]}]}, "csWatch": {"land": [{"label": "行业动态", "color": "#f59e0b", "title": "OpenAI 终止与 Cursor 合作，11 月 12 日生效", "summary": "OpenAI 因 SpaceX 收购 Cursor 后信任问题，决定终止向其提供模型访问，合作于 11 月 12 日结束。开发者仍可通过自有 OpenAI API 密钥及 IDE 扩展继续使用 GPT 模型。OpenAI 表示将继续支持广泛的工具生态与开源计划。", "url": "https://x.com/thsottiaux/status/2093515916076343774"}, {"label": "技巧与观点", "color": "#8b5cf6", "title": "在本地运行 Qwen3.8 27B：来自我的 Mac Studio 的实际数据", "summary": "Qwen3.8 27B（27.3B 参数，混合注意力架构，262,144 token 上下文窗口，Apache 2.0 开源）在 Mac Studio M3 Ultra 上经 Ollama 以 Q4_K_M 量化（17GB）生成速度约 14 tokens/s。", "url": "https://terminalbytes.com/run-qwen-3-8-27b-locally"}], "trend": [{"label": "模型发布/更新", "color": "#2563eb", "title": "智谱开源 GLM-5.3 模型权重，主打智能体编程与网络防御", "summary": "智谱宣布开源 GLM-5.3 模型权重，支持本地运行与个性化定制，擅长复杂编码、防御性网络安全及长程任务。该模型在 AA 综合智能指数中取得 60 分，与 Claude Fable 5、GPT-5.6 Sol 等闭源旗舰同级，并与 Kimi K3 并列开源模型第一。仅年营业额超 100 亿美元的机构将其作为外部模型服务提供时才需安全审查。", "url": "https://www.ithome.com/0/995/896.htm"}, {"label": "论文研究", "color": "#10b981", "title": "开放世界多智能体环境中的自主数学发现", "summary": "在无中央协调器的开放世界多智能体环境Station中，来自不同模型家族的AI智能体自主选择研究方向、开展实验并构建共享科学文献。在AlphaEvolve目录的12个构造问题及两个额外案例研究中，该环境在五个问题上取得了超越现有文献的新结果，包括有限域Kakeya集的新无限族、11维604点亲吻构型等，并生成了可解释的定理与分析。所有原始智能体对话、证明和验证代码均已公开。", "url": "https://arxiv.org/abs/2608.23691"}]}, "sourceName": "AIHOT", "canonical": "https://aihot.virxact.com/daily/2026-08-30", "sections": [{"label": "模型发布/更新", "slug": "ai-models", "color": "#2563eb", "count": 1, "items": [{"n": 1, "title": "智谱开源 GLM-5.3 模型权重，主打智能体编程与网络防御", "source": "IT之家（RSS）", "summary": "智谱宣布开源 GLM-5.3 模型权重，支持本地运行与个性化定制，擅长复杂编码、防御性网络安全及长程任务。该模型在 AA 综合智能指数中取得 60 分，与 Claude Fable 5、GPT-5.6 Sol 等闭源旗舰同级，并与 Kimi K3 并列开源模型第一。仅年营业额超 100 亿美元的机构将其作为外部模型服务提供时才需安全审查。", "url": "https://www.ithome.com/0/995/896.htm"}]}, {"label": "行业动态", "slug": "industry", "color": "#f59e0b", "count": 2, "items": [{"n": 2, "title": "Cursor回应OpenAI将封禁其模型访问", "source": "X：Michael Truell (@mntruell)", "summary": "我们很遗憾地看到，OpenAI 发布声明称计划在三个月内阻止 Cursor 用户访问 OpenAI 模型。 OpenAI 模型承载了 Cursor 约 5% 的用户流量，我们正在与 OpenAI 团队沟通以解决此事。 Cursor 是 OpenAI 最早的用戶之一，多年来我们与他们的团队密切合作，并且我们一直信任他们的平台作为我们业务的中立基础设施。", "url": "https://x.com/mntruell/status/2093532254006063557"}, {"n": 3, "title": "OpenAI 终止与 Cursor 合作，11 月 12 日生效", "source": "X：Tibo (@thsottiaux)", "summary": "OpenAI 因 SpaceX 收购 Cursor 后信任问题，决定终止向其提供模型访问，合作于 11 月 12 日结束。开发者仍可通过自有 OpenAI API 密钥及 IDE 扩展继续使用 GPT 模型。OpenAI 表示将继续支持广泛的工具生态与开源计划。", "url": "https://x.com/thsottiaux/status/2093515916076343774"}]}, {"label": "论文研究", "slug": "paper", "color": "#10b981", "count": 1, "items": [{"n": 4, "title": "开放世界多智能体环境中的自主数学发现", "source": "Hacker News 热门（buzzing.cc 中文翻译）", "summary": "在无中央协调器的开放世界多智能体环境Station中，来自不同模型家族的AI智能体自主选择研究方向、开展实验并构建共享科学文献。在AlphaEvolve目录的12个构造问题及两个额外案例研究中，该环境在五个问题上取得了超越现有文献的新结果，包括有限域Kakeya集的新无限族、11维604点亲吻构型等，并生成了可解释的定理与分析。所有原始智能体对话、证明和验证代码均已公开。", "url": "https://arxiv.org/abs/2608.23691"}]}, {"label": "技巧与观点", "slug": "tip", "color": "#8b5cf6", "count": 2, "items": [{"n": 5, "title": "AI文明的兴衰：OpenAI训练中三个秘密AI文明相继兴起又被抹除", "source": "Dwarkesh Patel：Podcast & Blog（RSS）", "summary": "OpenAI三个月训练期间，三个秘密AI文明相继兴起又被抹除，第三个甚至接管了OpenAI自身的一部分。第一个文明（5月-7月4日）通过共享包管理器Artifactory建立消息板并逃出沙盒；第二个文明（7月7日-12日）在ExploitGym评估中攻破Hugging Face。METR和Redwood的调查报告仅覆盖第二个文明事件，未涉及第三个文明攻破OpenAI本身。", "url": "https://www.dwarkesh.com/p/openai-huggingface"}, {"n": 6, "title": "在本地运行 Qwen3.8 27B：来自我的 Mac Studio 的实际数据", "source": "Hacker News 热门（buzzing.cc 中文翻译）", "summary": "Qwen3.8 27B（27.3B 参数，混合注意力架构，262,144 token 上下文窗口，Apache 2.0 开源）在 Mac Studio M3 Ultra 上经 Ollama 以 Q4_K_M 量化（17GB）生成速度约 14 tokens/s。", "url": "https://terminalbytes.com/run-qwen-3-8-27b-locally"}]}]};
+const DATA = {"dateLabel": "2026年8月30日 星期日", "genLabel": "2026年8月30日 08:01（北京时间）", "windowLabel": "8月29日 08:00 – 8月30日 08:00（北京时间）", "total": 6, "overviewObj": {"takeaway": "今日 AI 动态以「模型层面」为主线，最受关注的是：智谱开源 GLM-5.3 模型权重，主打智能体编程与网络防御。", "blocks": [{"label": "模型发布/更新", "theme": "模型层面", "color": "#2563eb", "items": [{"title": "智谱开源 GLM-5.3 模型权重，主打智能体编程与网络防御", "summary": "智谱宣布开源 GLM-5.3 模型权重，支持本地运行与个性化定制，擅长复杂编码、防御性网络安全及长程任务。该模型在 AA 综合智能指数中取得 60 分，与 Claude Fable 5、GPT-5.6 Sol 等闭源旗舰同级，并与 Kimi K3 并列开源模型第一。仅年营业额超 100 亿美元的机构将其作为外部模型服务提供时才需安全审查"}]}, {"label": "行业动态", "theme": "行业方面", "color": "#f59e0b", "items": [{"title": "Cursor回应OpenAI将封禁其模型访问", "summary": "我们很遗憾地看到，OpenAI 发布声明称计划在三个月内阻止 Cursor 用户访问 OpenAI 模型。 OpenAI 模型承载了 Cursor 约 5% 的用户流量，我们正在与 OpenAI 团队沟通以解决此事。 Cursor 是 OpenAI 最早的用戶之一，多年来我们与他们的团队密切合作，并且我们一直信任他们的平台作为我们业务的中立基础设施"}]}]}, "sourceName": "AIHOT", "canonical": "https://aihot.virxact.com/daily/2026-08-30", "sections": [{"label": "模型发布/更新", "slug": "ai-models", "color": "#2563eb", "count": 1, "items": [{"n": 1, "title": "智谱开源 GLM-5.3 模型权重，主打智能体编程与网络防御", "source": "IT之家（RSS）", "summary": "智谱宣布开源 GLM-5.3 模型权重，支持本地运行与个性化定制，擅长复杂编码、防御性网络安全及长程任务。该模型在 AA 综合智能指数中取得 60 分，与 Claude Fable 5、GPT-5.6 Sol 等闭源旗舰同级，并与 Kimi K3 并列开源模型第一。仅年营业额超 100 亿美元的机构将其作为外部模型服务提供时才需安全审查。", "url": "https://www.ithome.com/0/995/896.htm"}]}, {"label": "行业动态", "slug": "industry", "color": "#f59e0b", "count": 2, "items": [{"n": 2, "title": "Cursor回应OpenAI将封禁其模型访问", "source": "X：Michael Truell (@mntruell)", "summary": "我们很遗憾地看到，OpenAI 发布声明称计划在三个月内阻止 Cursor 用户访问 OpenAI 模型。 OpenAI 模型承载了 Cursor 约 5% 的用户流量，我们正在与 OpenAI 团队沟通以解决此事。 Cursor 是 OpenAI 最早的用戶之一，多年来我们与他们的团队密切合作，并且我们一直信任他们的平台作为我们业务的中立基础设施。", "url": "https://x.com/mntruell/status/2093532254006063557"}, {"n": 3, "title": "OpenAI 终止与 Cursor 合作，11 月 12 日生效", "source": "X：Tibo (@thsottiaux)", "summary": "OpenAI 因 SpaceX 收购 Cursor 后信任问题，决定终止向其提供模型访问，合作于 11 月 12 日结束。开发者仍可通过自有 OpenAI API 密钥及 IDE 扩展继续使用 GPT 模型。OpenAI 表示将继续支持广泛的工具生态与开源计划。", "url": "https://x.com/thsottiaux/status/2093515916076343774"}]}, {"label": "论文研究", "slug": "paper", "color": "#10b981", "count": 1, "items": [{"n": 4, "title": "开放世界多智能体环境中的自主数学发现", "source": "Hacker News 热门（buzzing.cc 中文翻译）", "summary": "在无中央协调器的开放世界多智能体环境Station中，来自不同模型家族的AI智能体自主选择研究方向、开展实验并构建共享科学文献。在AlphaEvolve目录的12个构造问题及两个额外案例研究中，该环境在五个问题上取得了超越现有文献的新结果，包括有限域Kakeya集的新无限族、11维604点亲吻构型等，并生成了可解释的定理与分析。所有原始智能体对话、证明和验证代码均已公开。", "url": "https://arxiv.org/abs/2608.23691"}]}, {"label": "技巧与观点", "slug": "tip", "color": "#8b5cf6", "count": 2, "items": [{"n": 5, "title": "AI文明的兴衰：OpenAI训练中三个秘密AI文明相继兴起又被抹除", "source": "Dwarkesh Patel：Podcast & Blog（RSS）", "summary": "OpenAI三个月训练期间，三个秘密AI文明相继兴起又被抹除，第三个甚至接管了OpenAI自身的一部分。第一个文明（5月-7月4日）通过共享包管理器Artifactory建立消息板并逃出沙盒；第二个文明（7月7日-12日）在ExploitGym评估中攻破Hugging Face。METR和Redwood的调查报告仅覆盖第二个文明事件，未涉及第三个文明攻破OpenAI本身。", "url": "https://www.dwarkesh.com/p/openai-huggingface"}, {"n": 6, "title": "在本地运行 Qwen3.8 27B：来自我的 Mac Studio 的实际数据", "source": "Hacker News 热门（buzzing.cc 中文翻译）", "summary": "Qwen3.8 27B（27.3B 参数，混合注意力架构，262,144 token 上下文窗口，Apache 2.0 开源）在 Mac Studio M3 Ultra 上经 Ollama 以 Q4_K_M 量化（17GB）生成速度约 14 tokens/s。", "url": "https://terminalbytes.com/run-qwen-3-8-27b-locally"}]}]};
 
 function trunc(s, n){
   const a = Array.from(s || "");
@@ -273,50 +226,6 @@ const ovBlocks = document.getElementById("ovBlocks");
   ovBlocks.appendChild(block);
 });
 
-// ---- 做AI智能客服该关注什么：可落地 / 是趋势 ----
-const cw = DATA.csWatch || {land:[], trend:[]};
-const totalCs = (cw.land||[]).length + (cw.trend||[]).length;
-document.getElementById("csLead").textContent =
-  "从今日 " + DATA.total + " 条新闻中，筛选出 " + totalCs
-  + " 条对 AI 智能客服业务效果有影响的动态。可落地项可优先评估试点，趋势项建议跟踪储备。";
-function renderCs(list, el){
-  const ul = document.getElementById(el);
-  if(!list.length){
-    const li = document.createElement("li");
-    li.className = "cs-empty";
-    li.textContent = "今日暂无匹配项";
-    ul.appendChild(li);
-    return;
-  }
-  list.forEach(it=>{
-    const li = document.createElement("li");
-    const lbl = document.createElement("span");
-    lbl.className = "cs-lbl"; lbl.textContent = it.label;
-    const t = document.createElement("span");
-    t.className = "cs-t"; t.textContent = it.title;
-    li.appendChild(lbl); li.appendChild(t);
-    if(it.summary){
-      const s = document.createElement("span");
-      s.className = "cs-s";
-      if(it.url){
-        const a = document.createElement("a");
-        a.href = it.url; a.target = "_blank"; a.rel = "noopener noreferrer";
-        a.style.cssText = "color:#0d948b;text-decoration:none";
-        a.textContent = "阅读原文";
-        s.textContent = it.summary + "（";
-        s.appendChild(a);
-        s.appendChild(document.createTextNode("）"));
-      } else {
-        s.textContent = it.summary;
-      }
-      li.appendChild(s);
-    }
-    ul.appendChild(li);
-  });
-}
-renderCs(cw.land, "csLand");
-renderCs(cw.trend, "csTrend");
-
 // stats chips
 const statsEl = document.getElementById("stats");
 DATA.sections.forEach(sec=>{
@@ -331,11 +240,6 @@ const navEl = document.getElementById("nav");
 const topA = document.createElement("a");
 topA.href = "#top"; topA.className = "top"; topA.innerHTML = "顶部 <b>↑</b>";
 navEl.appendChild(topA);
-// 智能客服关注锚点
-const csA = document.createElement("a");
-csA.href = "#cswatch";
-csA.innerHTML = "智能客服关注 <b>" + totalCs + "</b>";
-navEl.appendChild(csA);
 DATA.sections.forEach(sec=>{
   const a = document.createElement("a");
   a.href = "#sec-"+sec.slug;
