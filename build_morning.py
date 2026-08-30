@@ -13,6 +13,9 @@ CANON = [
     ("技巧与观点",   "tip",         "#8b5cf6"),
 ]
 
+# 兜底色：数据源当天若出现 CANON 之外的分类，按出现顺序分配稳定色，保证不丢不漏
+FALLBACK_COLORS = ["#14b8a6", "#f97316", "#a855f7", "#ef4444", "#0d948b", "#78716c"]
+
 WD = ["星期一","星期二","星期三","星期四","星期五","星期六","星期日"]
 
 def bj_dt(iso):
@@ -61,6 +64,51 @@ def build_overview(sections_out, date_label):
     takeaway = f"今日 AI 动态以「{dom['theme']}」为主线，最受关注的是：{top}。"
     return {"takeaway": takeaway, "blocks": blocks}
 
+# ---- 做AI智能客服该关注什么 ----
+# 从所有分类新闻里，筛出对『AI智能客服业务效果』有影响的条目。
+# 关键词覆盖：模型/Agent能力、成本、多模态、终端、私有化、工具调用等能直接或间接
+# 提升客服(答得准/回得快/能代办/更便宜/更合规)的能力信号。
+CS_LAND = [
+    "Agent", "智能体", "自动化", "工作流", "工具调用", "function call", "computer use",
+    "多模态", "multimodal", "视觉", "图像", "语音", "端侧", "本地部署", "私有化",
+    "开源", "开放权重", "成本", "降价", "推理", "算力", "上下文", "长上下文",
+    "RAG", "检索", "路由", "router", "多轮", "对话", "人工", "客服", "客户服务",
+    "价格", "token", "API", "调用", "智能编程", "网络防御", "安全",
+]
+# 趋势词：偏方向性/基础设施/长期，标记为『是趋势』；其余按『可落地』呈现
+CS_TREND = [
+    "自主", "探索", "环境", "文明", "研究", "开放世界", "数学发现", "网络防御",
+    "多智能体", "长期", "规划", "记忆", "评测", "基准",
+]
+
+def build_cs_watch(sections_out):
+    """生成『做AI智能客服该关注什么』：命中智能客服影响信号的新闻 → 可落地 / 是趋势 两类。
+    每类给『简要总结』（来源标题 + 一句话对客服的影响），便于领导快速扫读决策。"""
+    # 汇总所有分类的新闻，保留来源分类信息
+    flat = []
+    for sec in sections_out:
+        for it in sec["items"]:
+            blob = (it["title"] or "") + " " + (it["summary"] or "")
+            flat.append({
+                "label": sec["label"], "color": sec["color"],
+                "title": it["title"], "summary": it["summary"], "url": it["url"],
+                "blob": blob,
+            })
+
+    land = []   # 可落地
+    trend = []  # 是趋势
+    for it in flat:
+        hit = any(k.lower() in it["blob"].lower() for k in CS_LAND)
+        if not hit:
+            continue
+        is_trend = any(k.lower() in it["blob"].lower() for k in CS_TREND)
+        (trend if is_trend else land).append({
+            "label": it["label"], "color": it["color"],
+            "title": it["title"], "summary": it["summary"], "url": it["url"],
+        })
+
+    return {"land": land, "trend": trend}
+
 d = json.load(open(SRC))
 sec_map = {s["label"]: s["items"] for s in d.get("sections", [])}
 
@@ -75,11 +123,14 @@ gen_label = f"{gen.year}年{gen.month}月{gen.day}日 {gen.hour:02d}:{gen.minute
 ws = bj_dt(d["windowStart"]); we = bj_dt(d["windowEnd"])
 window_label = f"{bj_hm(ws)} – {bj_hm(we)}（北京时间）"
 
-# ----- map into 5 canonical sections with global numbering -----
+# ----- map into sections with global numbering -----
+# 优先按 CANON 固定顺序渲染已知分类；数据源当天若出现 CANON 之外的新分类，
+# 按出现顺序追加渲染（分配兜底色），确保所有分类、所有新闻都不丢不漏。
 global_idx = 0
 sections_out = []
-for label, slug, color in CANON:
-    items = sec_map.get(label, [])
+
+def _make_section(label, slug, color, items):
+    global global_idx
     cards = []
     for it in items:
         global_idx += 1
@@ -91,10 +142,25 @@ for label, slug, color in CANON:
             "summary": it.get("summary", "") or "",
             "url": url,
         })
-    sections_out.append({
-        "label": label, "slug": slug, "color": color,
-        "count": len(cards), "items": cards,
-    })
+    return {"label": label, "slug": slug, "color": color,
+            "count": len(cards), "items": cards}
+
+seen_labels = set()
+for label, slug, color in CANON:
+    if label not in sec_map:
+        continue
+    seen_labels.add(label)
+    sections_out.append(_make_section(label, slug, color, sec_map[label]))
+
+# 追加数据源里 CANON 未覆盖的分类（保证不丢）
+_fb = 0
+for label, items in sec_map.items():
+    if label in seen_labels:
+        continue
+    slug = "sec-" + str(len(sections_out) + 1)
+    color = FALLBACK_COLORS[_fb % len(FALLBACK_COLORS)]
+    _fb += 1
+    sections_out.append(_make_section(label, slug, color, items))
 
 total = global_idx
 src = d.get("attribution", {})
@@ -102,6 +168,7 @@ canonical = src.get("canonical", "https://aihot.virxact.com")
 source_name = src.get("source", "AIHOT")
 
 overview = build_overview(sections_out, date_label)
+cs_watch = build_cs_watch(sections_out)
 
 DATA = {
     "dateLabel": date_label,
@@ -109,6 +176,7 @@ DATA = {
     "windowLabel": window_label,
     "total": total,
     "overviewObj": overview,
+    "csWatch": cs_watch,
     "sourceName": source_name,
     "canonical": canonical,
     "sections": sections_out,
@@ -196,6 +264,33 @@ HTML = """<!DOCTYPE html>
     .overview{padding:0 12px}
     .ov-block{flex-direction:column;gap:3px}
     .ov-block-label{flex:none}
+  }
+
+  /* CSWATCH (做AI智能客服该关注什么) */
+  .cswatch{max-width:1080px;margin:14px auto 0;padding:0 18px}
+  .cswatch .box{border-left-color:#0d948b}
+  .cswatch .o-head .tag.cs{color:#0d948b;background:#e6f7f4}
+  .cswatch .takeaway.cs-lead{
+    font-size:14px;font-weight:600;color:#134e4a;line-height:1.6;
+    margin:2px 0 14px;padding:10px 14px;background:#e9f7f5;
+    border-radius:10px;border-left:3px solid #0d948b;
+  }
+  .cs-groups{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .cs-group{background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+  .cs-group-head{display:flex;align-items:center;gap:7px;font-size:14.5px;font-weight:800;margin-bottom:10px}
+  .cs-ic{width:9px;height:9px;border-radius:50%;display:inline-block}
+  .cs-group-head.land .cs-ic{background:#059669;box-shadow:0 0 0 4px #d1fae5}
+  .cs-group-head.trend .cs-ic{background:#0284c7;box-shadow:0 0 0 4px #e0f2fe}
+  .cs-list{list-style:none}
+  .cs-list li{padding:9px 0;border-top:1px dashed var(--line);line-height:1.55}
+  .cs-list li:first-child{border-top:none;padding-top:0}
+  .cs-list .cs-lbl{font-size:11px;font-weight:700;color:#0d948b;background:#e6f7f4;border-radius:6px;padding:1px 7px;margin-right:6px}
+  .cs-list .cs-t{font-size:13.5px;font-weight:700;color:#1f2533}
+  .cs-list .cs-s{display:block;font-size:12.5px;color:#4b5563;margin-top:3px}
+  .cs-empty{font-size:13px;color:var(--muted);padding:4px 0}
+  @media (max-width:640px){
+    .cswatch{padding:0 12px}
+    .cs-groups{grid-template-columns:1fr}
   }
 
   /* NAV */
@@ -287,6 +382,26 @@ HTML = """<!DOCTYPE html>
     </div>
   </section>
 
+  <section class="cswatch" id="cswatch">
+    <div class="box">
+      <div class="o-head">
+        <span class="tag cs">做 AI 智能客服 · 该关注什么</span>
+        <h2>做AI智能客服该关注什么</h2>
+      </div>
+      <p class="takeaway cs-lead" id="csLead"></p>
+      <div class="cs-groups">
+        <div class="cs-group">
+          <div class="cs-group-head land"><span class="cs-ic"></span>可落地</div>
+          <ul class="cs-list" id="csLand"></ul>
+        </div>
+        <div class="cs-group">
+          <div class="cs-group-head trend"><span class="cs-ic"></span>是趋势</div>
+          <ul class="cs-list" id="csTrend"></ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <nav class="nav" id="nav"></nav>
 
   <main class="wrap" id="content"></main>
@@ -343,6 +458,50 @@ const ovBlocks = document.getElementById("ovBlocks");
   ovBlocks.appendChild(block);
 });
 
+// ---- 做AI智能客服该关注什么：可落地 / 是趋势 ----
+const cw = DATA.csWatch || {land:[], trend:[]};
+const totalCs = (cw.land||[]).length + (cw.trend||[]).length;
+document.getElementById("csLead").textContent =
+  "从今日 " + DATA.total + " 条新闻中，筛选出 " + totalCs
+  + " 条对 AI 智能客服业务效果有影响的动态。可落地项可优先评估试点，趋势项建议跟踪储备。";
+function renderCs(list, el){
+  const ul = document.getElementById(el);
+  if(!list.length){
+    const li = document.createElement("li");
+    li.className = "cs-empty";
+    li.textContent = "今日暂无匹配项";
+    ul.appendChild(li);
+    return;
+  }
+  list.forEach(it=>{
+    const li = document.createElement("li");
+    const lbl = document.createElement("span");
+    lbl.className = "cs-lbl"; lbl.textContent = it.label;
+    const t = document.createElement("span");
+    t.className = "cs-t"; t.textContent = it.title;
+    li.appendChild(lbl); li.appendChild(t);
+    if(it.summary){
+      const s = document.createElement("span");
+      s.className = "cs-s";
+      if(it.url){
+        const a = document.createElement("a");
+        a.href = it.url; a.target = "_blank"; a.rel = "noopener noreferrer";
+        a.style.cssText = "color:#0d948b;text-decoration:none";
+        a.textContent = "阅读原文";
+        s.textContent = it.summary + "（";
+        s.appendChild(a);
+        s.appendChild(document.createTextNode("）"));
+      } else {
+        s.textContent = it.summary;
+      }
+      li.appendChild(s);
+    }
+    ul.appendChild(li);
+  });
+}
+renderCs(cw.land, "csLand");
+renderCs(cw.trend, "csTrend");
+
 // stats chips
 const statsEl = document.getElementById("stats");
 DATA.sections.forEach(sec=>{
@@ -357,6 +516,11 @@ const navEl = document.getElementById("nav");
 const topA = document.createElement("a");
 topA.href = "#top"; topA.className = "top"; topA.innerHTML = "顶部 <b>↑</b>";
 navEl.appendChild(topA);
+// 智能客服关注锚点
+const csA = document.createElement("a");
+csA.href = "#cswatch";
+csA.innerHTML = "智能客服关注 <b>" + totalCs + "</b>";
+navEl.appendChild(csA);
 DATA.sections.forEach(sec=>{
   const a = document.createElement("a");
   a.href = "#sec-"+sec.slug;
